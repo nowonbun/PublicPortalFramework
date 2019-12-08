@@ -53,6 +53,7 @@ custom styles.
 ## Initialize
 php.ini
 sudo a2enmod rewrite
+sudo apt-get install php7.2-xml
 sudo apt-get install php7.2-intl
 sudo apt-get install php7.2-mbstring
 sudo apt-get install php7.2-mysqli
