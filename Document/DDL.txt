@@ -1,0 +1,171 @@
+DROP DATABASE portal;
+CREATE DATABASE portal;
+-- ON DELETE CASCADE ON UPDATE RESTRICT
+USE portal;
+
+-- Master
+CREATE TABLE VIEW(
+    CODE               NCHAR(4)          NOT NULL,
+    NAME               NVARCHAR(200)     NOT NULL,
+    HREF               NVARCHAR(200)     NOT NULL,
+    DESCRIPTION        NVARCHAR(255)     NULL,
+    IS_ACTIVE          BIT               NOT NULL     DEFAULT TRUE,
+    
+    PRIMARY KEY (CODE)
+);
+
+-- Master
+CREATE TABLE ROLE(
+    ROLE               NCHAR(4)          NOT NULL,
+    NAME               NVARCHAR(255)     NOT NULL,
+    DESCRIPTION        NVARCHAR(255)     NULL,
+    IS_ACTIVE          BIT               NOT NULL     DEFAULT TRUE,
+    
+    PRIMARY KEY (ROLE)
+);
+
+-- Master
+CREATE TABLE STATE(
+    STATE              INT               NOT NULL,
+    NAME               NVARCHAR(255)     NOT NULL,
+    DESCRIPTION        NVARCHAR(255)     NULL,
+    IS_ACTIVE          BIT               NOT NULL     DEFAULT TRUE,
+    
+    PRIMARY KEY(STATE)
+);
+
+-- Transaction
+CREATE TABLE COMPANY(
+    ID                 INT               NOT NULL     AUTO_INCREMENT,
+    NAME               NVARCHAR(255)     NOT NULL     UNIQUE,
+    CREATER            NVARCHAR(255)     NOT NULL,
+    CREATE_DATE        DATETIME          NOT NULL,
+    LAST_UPDATER       NVARCHAR(255)     NULL,
+    LAST_UPDATE        DATETIME          NULL,
+    IS_DELETE          BOOLEAN           NOT NULL     DEFAULT FALSE,
+    STATE              INT               NULL,
+    
+    PRIMARY KEY (ID),
+    FOREIGN KEY (STATE) REFERENCES STATE (STATE) 
+);
+
+-- Transaction
+CREATE TABLE USER_GROUP(
+    ID                 INT               NOT NULL     AUTO_INCREMENT,
+    NAME               NVARCHAR(255)     NOT NULL,
+    COMPANY_ID         INT               NOT NULL,
+    CREATER            NVARCHAR(255)     NOT NULL,
+    CREATE_DATE        DATETIME          NOT NULL,
+    LAST_UPDATER       NVARCHAR(255)     NULL,
+    LAST_UPDATE        DATETIME          NULL,
+    IS_DELETE          BOOLEAN           NOT NULL     DEFAULT FALSE,
+    STATE              INT               NULL,
+    
+    PRIMARY KEY (ID),
+    FOREIGN KEY (COMPANY_ID) REFERENCES COMPANY (ID),
+    FOREIGN KEY (STATE) REFERENCES STATE (STATE)
+);
+
+-- Transaction
+CREATE TABLE USER (
+    ID                 NVARCHAR(255)     NOT NULL,
+    NAME               NVARCHAR(255)     NOT NULL,
+    IMG_BLOB           TEXT              NULL,
+    COMPANY_ID         INT               NOT NULL,
+    GROUP_ID           INT               NOT NULL,
+    CREATER            NVARCHAR(255)     NOT NULL,
+    CREATE_DATE        DATETIME          NOT NULL,
+    LAST_UPDATER       NVARCHAR(255)     NULL,
+    LAST_UPDATE        DATETIME          NULL,
+    IS_DELETE          BOOLEAN           NOT NULL     DEFAULT FALSE,
+    STATE              INT               NULL,
+
+    PRIMARY KEY (ID),
+    FOREIGN KEY (COMPANY_ID) REFERENCES COMPANY (ID),
+    FOREIGN KEY (GROUP_ID) REFERENCES USER_GROUP (ID),
+    FOREIGN KEY (STATE) REFERENCES STATE (STATE) 
+);
+
+-- Transaction
+CREATE TABLE PASSWORD(
+    IDX                INT               NOT NULL     AUTO_INCREMENT,
+    ID                 NVARCHAR(255)     NOT NULL,
+    PASSWORD           NVARCHAR(255)     NOT NULL,
+    CREATER            NVARCHAR(255)     NOT NULL,
+    CREATE_DATE        DATETIME          NOT NULL,
+    LAST_UPDATER       NVARCHAR(255)     NULL,
+    LAST_UPDATE        DATETIME          NULL,
+    IS_DELETE          BOOLEAN           NOT NULL     DEFAULT FALSE,
+    STATE              INT               NULL,
+
+    PRIMARY KEY (IDX,ID),
+    FOREIGN KEY (ID) REFERENCES USER(ID),
+    FOREIGN KEY (STATE) REFERENCES STATE (STATE) 
+);
+
+-- Map
+CREATE TABLE MAP_VIEW_COMPANY(
+    VIEW_CODE          NCHAR(4)          NOT NULL,
+    COMPANY_ID         INT               NOT NULL,
+    
+    PRIMARY KEY (VIEW_CODE,COMPANY_ID),
+    FOREIGN KEY (VIEW_CODE) REFERENCES VIEW(CODE),
+    FOREIGN KEY (COMPANY_ID) REFERENCES COMPANY(ID)
+);
+
+-- Map
+CREATE TABLE MAP_VIEW_GROUP(
+    VIEW_CODE          NCHAR(4)          NOT NULL,
+    GROUP_ID           INT               NOT NULL,
+    
+    PRIMARY KEY (VIEW_CODE,GROUP_ID),
+    FOREIGN KEY (VIEW_CODE) REFERENCES VIEW(CODE),
+    FOREIGN KEY (GROUP_ID) REFERENCES USER_GROUP(ID)
+);
+
+-- Map
+CREATE TABLE MAP_VIEW_USER(
+    VIEW_CODE          NCHAR(4)          NOT NULL,
+    USER_ID            NVARCHAR(255)     NOT NULL,
+    
+    PRIMARY KEY (VIEW_CODE,USER_ID),
+    FOREIGN KEY (VIEW_CODE) REFERENCES VIEW(CODE),
+    FOREIGN KEY (USER_ID) REFERENCES USER(ID)
+);
+
+-- Map
+CREATE TABLE MAP_ROLE_COMPANY(
+    ROLE_CODE          NCHAR(4)          NOT NULL,
+    COMPANY_ID         INT               NULL,
+    
+    PRIMARY KEY (ROLE_CODE,COMPANY_ID),
+    FOREIGN KEY (ROLE_CODE) REFERENCES ROLE(ROLE),
+    FOREIGN KEY (COMPANY_ID) REFERENCES COMPANY(ID)
+);
+
+-- Map
+CREATE TABLE MAP_ROLE_GROUP(
+    ROLE_CODE          NCHAR(4)          NOT NULL,
+    GROUP_ID           INT               NOT NULL,
+    
+    PRIMARY KEY (ROLE_CODE,GROUP_ID),
+    FOREIGN KEY (ROLE_CODE) REFERENCES ROLE(ROLE),
+    FOREIGN KEY (GROUP_ID) REFERENCES USER_GROUP(ID)
+);
+
+-- Map
+CREATE TABLE MAP_ROLE_USER(
+    ROLE_CODE          NCHAR(4)          NOT NULL,
+    USER_ID            NVARCHAR(255)     NOT NULL,
+    
+    PRIMARY KEY (ROLE_CODE,USER_ID),
+    FOREIGN KEY (ROLE_CODE) REFERENCES ROLE(ROLE),
+    FOREIGN KEY (USER_ID) REFERENCES USER(ID)
+);
+
+CREATE TABLE MST_LOOK_UP(
+    `KEY` NVARCHAR(20),
+    `VALUE` NVARCHAR(255),
+    
+    PRIMARY KEY (`KEY`)
+);
